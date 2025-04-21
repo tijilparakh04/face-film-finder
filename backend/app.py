@@ -4,7 +4,7 @@ import base64
 import numpy as np
 import os
 import pandas as pd
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 import cv2
 import re
 import json
@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 # Paths
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', '_mini_XCEPTION.73.hdf5')
+MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'emotion_recognition_model.h5')
 
 # Global variables to store loaded data
 emotion_model = None
