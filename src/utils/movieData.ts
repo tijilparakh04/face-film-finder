@@ -202,56 +202,29 @@ export const getMovieRecommendationsByEmotion = async (
   
     console.log(`Getting recommendations for emotion: ${emotion}`);
   
+    // Get the target genres for this emotion
     const targetGenres = emotionGenreMappings[emotion.toLowerCase()] || emotionGenreMappings.neutral;
-    const targetKeywords = emotionKeywordMappings[emotion.toLowerCase()] || emotionKeywordMappings.neutral;
-  
     console.log("Target genres:", targetGenres);
-    console.log("Target keywords:", targetKeywords);
-  
-    const scoredMovies = allMovies.map(movie => {
-      const genreMatch = movie.genres ? movie.genres.filter(genre => 
+    
+    // Filter movies that match any of the target genres
+    const matchingMovies = allMovies.filter(movie => 
+      movie.genres && movie.genres.some(genre => 
         targetGenres.some(target => genre.toLowerCase().includes(target.toLowerCase()))
-      ).length : 0;
-  
-      const keywordMatch = movie.keywords ? movie.keywords.filter(keyword => 
-        targetKeywords.some(target => keyword.toLowerCase().includes(target.toLowerCase()))
-      ).length : 0;
-  
-      const genreScore = movie.genres && movie.genres.length > 0 ? 
-        genreMatch / Math.min(targetGenres.length, movie.genres.length) : 0;
-  
-      const keywordScore = movie.keywords && movie.keywords.length > 0 ? 
-        keywordMatch / Math.min(targetKeywords.length, movie.keywords.length) : 0;
-  
-      const ratingScore = (movie.vote_average || 0) / 10;
-      const popularityScore = Math.min((movie.popularity || 0) / 100, 1);
-      const voteCountBonus = Math.min((movie.vote_count || 0) / 10000, 1) * 0.2;
-  
-      const score = (
-        (genreScore * 0.4) + 
-        (keywordScore * 0.2) + 
-        (ratingScore * 0.2) + 
-        (popularityScore * 0.1) +
-        voteCountBonus
-      );
-  
-      // Log scoring details for debugging
-      console.log(`Movie: ${movie.title}`);
-      console.log(`  Genre Match: ${genreMatch}, Keyword Match: ${keywordMatch}`);
-      console.log(`  Scores - Genre: ${genreScore}, Keyword: ${keywordScore}, Rating: ${ratingScore}, Popularity: ${popularityScore}, Vote Bonus: ${voteCountBonus}`);
-      console.log(`  Final Score: ${score}`);
-  
-      return {
-        ...movie,
-        score
-      };
-    });
-
-    const topMovies = scoredMovies
-      .sort((a, b) => (b.score || 0) - (a.score || 0))
-      .slice(0, limit);
-
-    return { movies: topMovies };
+      )
+    );
+    
+    // If we don't have enough matching movies, return what we have
+    if (matchingMovies.length <= limit) {
+      return { movies: matchingMovies };
+    }
+    
+    // Shuffle the matching movies to get random recommendations
+    const shuffledMovies = [...matchingMovies].sort(() => Math.random() - 0.5);
+    
+    // Take the first 'limit' movies
+    const randomRecommendations = shuffledMovies.slice(0, limit);
+    
+    return { movies: randomRecommendations };
   } catch (error) {
     console.error("Error getting recommendations:", error);
     return { 
@@ -260,7 +233,6 @@ export const getMovieRecommendationsByEmotion = async (
     };
   }
 };
-
 
 // Helper function to get recommendation message based on emotion
 export const getRecommendationMessage = (emotion: string): string => {
