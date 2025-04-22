@@ -21,5 +21,9 @@ This project is built with:
 - Vite
 - TypeScript
 - React
-- shadcn-ui
 - Tailwind CSS
+
+For model training purposes, the following libraries were used:
+
+- Tensorflow
+- Keras
